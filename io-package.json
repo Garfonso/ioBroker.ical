@@ -483,6 +483,30 @@
                 "write": false
             },
             "native": {}
+        },
+        {
+            "_id": "data.todosTable",
+            "type": "state",
+            "common": {
+                "name": {
+                    "en": "Tasks as array",
+                    "de": "Aufgaben als Array",
+                    "ru": "Задачи как массив",
+                    "pt": "Tarefas como array",
+                    "nl": "Tas als array",
+                    "fr": "Tâches comme tableau",
+                    "it": "Compiti come array",
+                    "es": "Tareas como matriz",
+                    "pl": "Zadania jako tablica",
+                    "zh-cn": "任务范围"
+                },
+                "desc": "JS table: []",
+                "type": "array",
+                "role": "list",
+                "read": true,
+                "write": false
+            },
+            "native": {}
         }
     ]
 }

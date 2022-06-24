@@ -93,6 +93,7 @@ const preprewarn       = '<span style="font-weight: bold; color: yellow"><span c
 
 let   datesArray       = [];
 const events           = [];
+const todos            = [];
 const dictionary       = {
     'today':     {'en': 'Today',             'it': 'Oggi',                      'es': 'Hoy',                   'pl': 'Dzisiaj',                   'fr': 'Aujourd\'hui',              'de': 'Heute',            'ru': 'Сегодня',       'nl': 'Vandaag'},
     'tomorrow':  {'en': 'Tomorrow',          'it': 'Domani',                    'es': 'Mañana',                'pl': 'Jutro',                     'fr': 'Demain',                    'de': 'Morgen',           'ru': 'Завтра',        'nl': 'Morgen'},
@@ -317,139 +318,143 @@ async function processData(data, realnow, startpreview, endpreview, now2, calNam
         delete data[k];
 
         // only events with summary and a start date are interesting
-        if ((ev.summary !== undefined) && (ev.type === 'VEVENT') && ev.start && ev.start instanceof Date) {
-            adapter.log.debug(`ev: ${JSON.stringify(ev)}`);
-            if (!ev.end || !(ev.end instanceof Date)) {
-                ev.end = new Date(ev.start.getTime());
-                if (ev.start.getHours() === 0 && ev.start.getMinutes() === 0 && ev.start.getSeconds() === 0) {
-                    ev.end.setDate(ev.end.getDate() + 1);
-                }
-            }
-            // aha, it is RRULE in the event --> process it
-            if (ev.rrule !== undefined) {
-                let eventLength = treatAsUTC(ev.end.getTime()) - treatAsUTC(ev.start.getTime());
-                if (ev.datetype === 'date') {
-                    // If "whole day event" correct the eventlength to full days
-                    const calcStart = new Date(ev.start.getTime());
-                    calcStart.setHours(0,0,0,0);
-                    let calcEnd = new Date(ev.end.getTime());
-                    if (calcEnd.getHours() === 0 && calcEnd.getMinutes() === 0 && calcEnd.getSeconds() === 0) {
-                        // if end id 0:0:0 then it is considered exclusive, so reduce by 1s
-                        calcEnd = new Date(ev.end.getTime());
-                        calcEnd.setDate(calcEnd.getDate() - 1);
-                        adapter.log.debug(`Adjust enddate to exclude 0:0:0 for eventlength`);
+        if (ev.summary !== undefined) {
+            if ((ev.type === 'VEVENT') && ev.start && ev.start instanceof Date) {
+                adapter.log.debug(`ev: ${JSON.stringify(ev)}`);
+                if (!ev.end || !(ev.end instanceof Date)) {
+                    ev.end = new Date(ev.start.getTime());
+                    if (ev.start.getHours() === 0 && ev.start.getMinutes() === 0 && ev.start.getSeconds() === 0) {
+                        ev.end.setDate(ev.end.getDate() + 1);
                     }
-                    calcEnd.setHours(23,59,59,0);
-                    eventLength = treatAsUTC(calcEnd.getTime()) - treatAsUTC(calcStart.getTime());
-                    eventLength = Math.ceil(eventLength / ( 24 * 60 * 60 * 1000)) * 24 * 60 * 60 * 1000;
-                    adapter.log.debug(`Calculated Date Eventlength = ${eventLength} (${eventLength / ( 24 * 60 * 60 * 1000)} days) for ${calcStart.toString()} - ${calcEnd.toString()}`);
                 }
+                // aha, it is RRULE in the event --> process it
+                if (ev.rrule !== undefined) {
+                    let eventLength = treatAsUTC(ev.end.getTime()) - treatAsUTC(ev.start.getTime());
+                    if (ev.datetype === 'date') {
+                        // If "whole day event" correct the eventlength to full days
+                        const calcStart = new Date(ev.start.getTime());
+                        calcStart.setHours(0, 0, 0, 0);
+                        let calcEnd = new Date(ev.end.getTime());
+                        if (calcEnd.getHours() === 0 && calcEnd.getMinutes() === 0 && calcEnd.getSeconds() === 0) {
+                            // if end id 0:0:0 then it is considered exclusive, so reduce by 1s
+                            calcEnd = new Date(ev.end.getTime());
+                            calcEnd.setDate(calcEnd.getDate() - 1);
+                            adapter.log.debug(`Adjust enddate to exclude 0:0:0 for eventlength`);
+                        }
+                        calcEnd.setHours(23, 59, 59, 0);
+                        eventLength = treatAsUTC(calcEnd.getTime()) - treatAsUTC(calcStart.getTime());
+                        eventLength = Math.ceil(eventLength / (24 * 60 * 60 * 1000)) * 24 * 60 * 60 * 1000;
+                        adapter.log.debug(`Calculated Date Eventlength = ${eventLength} (${eventLength / (24 * 60 * 60 * 1000)} days) for ${calcStart.toString()} - ${calcEnd.toString()}`);
+                    }
 
-                const options = RRule.parseString(ev.rrule.toString());
+                    const options = RRule.parseString(ev.rrule.toString());
 
-                // the following workaround an issue in rule.between() later on where
-                // the time comparison between dtstart and until does not seem to work
-                // if both are not in the same DST zone (e.g. dtstart=2021-09-21T15:00:00.000Z
-                // until=2021-11-09T15:59:59.000Z) so that an event is still considered as TODAY
-                // even thought it ends one second before the next scheduled one.
-                if (options.until !== undefined && options.dtstart !== undefined) {
-                    options.until = addOffset(options.until, options.dtstart.getTimezoneOffset() - options.until.getTimezoneOffset());
-                }
-                adapter.log.debug(`options: ${JSON.stringify(options)}`);
+                    // the following workaround an issue in rule.between() later on where
+                    // the time comparison between dtstart and until does not seem to work
+                    // if both are not in the same DST zone (e.g. dtstart=2021-09-21T15:00:00.000Z
+                    // until=2021-11-09T15:59:59.000Z) so that an event is still considered as TODAY
+                    // even thought it ends one second before the next scheduled one.
+                    if (options.until !== undefined && options.dtstart !== undefined) {
+                        options.until = addOffset(options.until, options.dtstart.getTimezoneOffset() - options.until.getTimezoneOffset());
+                    }
+                    adapter.log.debug(`options: ${JSON.stringify(options)}`);
 
-                const rule = new RRule(options);
+                    const rule = new RRule(options);
 
-                let now3 = new Date(now2.getTime() - eventLength);
-                if (now2 < now3) {
-                    now3 = now2;
-                }
-                if (startpreview < now3) {
-                    now3 = startpreview;
-                }
-                adapter.log.debug(`RRule event:${ev.summary}; start:${ev.start.toString()}; endpreview:${endpreview.toString()}; startpreview:${startpreview.toString()}; now2:${now2.toString()}; now3:${now3.toString()}; rule:${JSON.stringify(rule)}`);
+                    let now3 = new Date(now2.getTime() - eventLength);
+                    if (now2 < now3) {
+                        now3 = now2;
+                    }
+                    if (startpreview < now3) {
+                        now3 = startpreview;
+                    }
+                    adapter.log.debug(`RRule event:${ev.summary}; start:${ev.start.toString()}; endpreview:${endpreview.toString()}; startpreview:${startpreview.toString()}; now2:${now2.toString()}; now3:${now3.toString()}; rule:${JSON.stringify(rule)}`);
 
-                let dates = [];
-                try {
-                    dates = rule.between(now3, endpreview, true);
-                } catch(e) {
-                    adapter.log.error(`Issue detected in RRule, event ignored; Please forward debug information to iobroker.ical developer: ${e.stack}
+                    let dates = [];
+                    try {
+                        dates = rule.between(now3, endpreview, true);
+                    } catch (e) {
+                        adapter.log.error(`Issue detected in RRule, event ignored; Please forward debug information to iobroker.ical developer: ${e.stack}
 RRule object: ${JSON.stringify(rule)}
 now3: ${now3}
 endpreview: ${endpreview}
 string: ${ev.rrule.toString()}
 options: ${JSON.stringify(options)}`
-                    );
-                }
+                        );
+                    }
 
-                adapter.log.debug(`dates: ${JSON.stringify(dates)}`);
-                // event within the time window
-                if (dates.length > 0) {
-                    for (let i = 0; i < dates.length; i++) {
-                        // use deep-copy otherwise setDate etc. overwrites data from different events
-                        let ev2 = ce.clone(ev);
+                    adapter.log.debug(`dates: ${JSON.stringify(dates)}`);
+                    // event within the time window
+                    if (dates.length > 0) {
+                        for (let i = 0; i < dates.length; i++) {
+                            // use deep-copy otherwise setDate etc. overwrites data from different events
+                            let ev2 = ce.clone(ev);
 
-                        // we have to move the start time of our clone
-                        // to a time relative to the timezone of the start time
-                        // so that re-currence events are setup correctly and
-                        // that the later exdate check will match correctly.
-                        ev2.start = dates[i];
-                        if (ev.datetype === 'date') {
-                            // make sure to set the time to 00:00:00 so that
-                            // this event will be recognized as a date event
-                            ev2.start.setHours(0,0,0,0);
-                        } else if (ev.datetype === 'date-time') {
-                            // add a time offset which is relative between
-                            // ev2 and ev because rrule seems to return dates in
-                            // local time only. And if not correctly the exdate
-                            // check later will not work correctly.
-                            ev2.start = addOffset(ev2.start, ev2.start.getTimezoneOffset() - ev.start.getTimezoneOffset());
-                        }
+                            // we have to move the start time of our clone
+                            // to a time relative to the timezone of the start time
+                            // so that re-currence events are setup correctly and
+                            // that the later exdate check will match correctly.
+                            ev2.start = dates[i];
+                            if (ev.datetype === 'date') {
+                                // make sure to set the time to 00:00:00 so that
+                                // this event will be recognized as a date event
+                                ev2.start.setHours(0, 0, 0, 0);
+                            } else if (ev.datetype === 'date-time') {
+                                // add a time offset which is relative between
+                                // ev2 and ev because rrule seems to return dates in
+                                // local time only. And if not correctly the exdate
+                                // check later will not work correctly.
+                                ev2.start = addOffset(ev2.start, ev2.start.getTimezoneOffset() - ev.start.getTimezoneOffset());
+                            }
 
-                        // Set end date based on length in ms
-                        ev2.end = new Date(ev2.start.getTime() + eventLength);
-                        if (ev2.start.getTimezoneOffset() !== ev2.end.getTimezoneOffset()) { // DST difference, we need to correct it
-                            ev2.end = addOffset(ev2.end, ev2.end.getTimezoneOffset() - ev2.start.getTimezoneOffset());
-                        }
+                            // Set end date based on length in ms
+                            ev2.end = new Date(ev2.start.getTime() + eventLength);
+                            if (ev2.start.getTimezoneOffset() !== ev2.end.getTimezoneOffset()) { // DST difference, we need to correct it
+                                ev2.end = addOffset(ev2.end, ev2.end.getTimezoneOffset() - ev2.start.getTimezoneOffset());
+                            }
 
-                        // we have to check if there is an exdate array
-                        // which defines dates that - if matched - should
-                        // be excluded.
-                        let checkDate = true;
-                        if (ev2.exdate) {
-                            adapter.log.debug(`   ${i}: Event (exdate: ${JSON.stringify(Object.keys(ev2.exdate))}): ${ev2.start.toString()} ${ev2.end.toString()}`);
-                            for(const d in ev2.exdate) {
-                                const dd = new Date(ev2.exdate[d]);
-                                if (dd.getTime() === ev2.start.getTime()) {
-                                    checkDate = false;
-                                    adapter.log.debug(`   ${i}: exclude ${dd.toString()}`);
-                                    break;
+                            // we have to check if there is an exdate array
+                            // which defines dates that - if matched - should
+                            // be excluded.
+                            let checkDate = true;
+                            if (ev2.exdate) {
+                                adapter.log.debug(`   ${i}: Event (exdate: ${JSON.stringify(Object.keys(ev2.exdate))}): ${ev2.start.toString()} ${ev2.end.toString()}`);
+                                for (const d in ev2.exdate) {
+                                    const dd = new Date(ev2.exdate[d]);
+                                    if (dd.getTime() === ev2.start.getTime()) {
+                                        checkDate = false;
+                                        adapter.log.debug(`   ${i}: exclude ${dd.toString()}`);
+                                        break;
+                                    }
+                                }
+                            } else {
+                                adapter.log.debug(`   ${i}: Event (NO exdate): ${ev2.start.toString()} ${ev2.end.toString()}`);
+                            }
+
+                            if (checkDate && ev.recurrences) {
+                                for (const dOri in ev.recurrences) {
+                                    const recurEvent = ev.recurrences[dOri];
+                                    if (recurEvent.recurrenceid.getTime() === ev2.start.getTime()) {
+                                        ev2 = ce.clone(recurEvent);
+                                        adapter.log.debug(`   ${i}: different recurring found replaced with Event:${ev2.start} ${ev2.end}`);
+                                    }
                                 }
                             }
-                        } else {
-                            adapter.log.debug(`   ${i}: Event (NO exdate): ${ev2.start.toString()} ${ev2.end.toString()}`);
-                        }
 
-                        if (checkDate && ev.recurrences) {
-                            for(const dOri in ev.recurrences) {
-                                const recurEvent = ev.recurrences[dOri];
-                                if (recurEvent.recurrenceid.getTime() === ev2.start.getTime()) {
-                                    ev2 = ce.clone(recurEvent);
-                                    adapter.log.debug(`   ${i}: different recurring found replaced with Event:${ev2.start} ${ev2.end}`);
-                                }
+                            if (checkDate) {
+                                await checkDates(ev2, endpreview, startpreview, realnow, ' rrule ', calName, filter);
                             }
                         }
-
-                        if (checkDate) {
-                            await checkDates(ev2, endpreview, startpreview, realnow, ' rrule ', calName, filter);
-                        }
+                    } else {
+                        adapter.log.debug('no RRule events inside the time interval');
                     }
                 } else {
-                    adapter.log.debug('no RRule events inside the time interval');
+                    adapter.log.debug(`Single event: ${ev.summary}; start:${ev.start}; end:${ev.end}; endpreview:${endpreview}; startpreview:${startpreview}; realnow:${realnow}`);
+                    // No RRule event
+                    await checkDates(ev, endpreview, startpreview, realnow, ' ', calName, filter);
                 }
-            } else {
-                adapter.log.debug(`Single event: ${ev.summary}; start:${ev.start}; end:${ev.end}; endpreview:${endpreview}; startpreview:${startpreview}; realnow:${realnow}`);
-                // No RRule event
-                await checkDates(ev, endpreview, startpreview, realnow, ' ', calName, filter);
+            } else if (ev.type === 'VTODO') {
+                todos.push(ev.summary);
             }
         }
 
@@ -1456,6 +1461,8 @@ async function displayDates() {
         await adapter.setStateAsync('data.html',  {val: '', ack: true});
         await adapter.setStateAsync('data.text',  {val: '', ack: true});
     }
+
+    await adapter.setStateAsync('data.todosTable', {val: JSON.stringify(todos), ack: true});
 
     await adapter.setStateAsync('data.count', {val: todayEventCounter, ack: true});
     await adapter.setStateAsync('data.countTomorrow', {val: tomorrowEventCounter, ack: true});
