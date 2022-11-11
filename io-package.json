@@ -1,8 +1,32 @@
 {
   "common": {
     "name": "ical",
-    "version": "1.13.0",
+    "version": "1.13.2",
     "news": {
+      "1.13.2": {
+        "en": "fix strange log messages by downgrading RRule again",
+        "de": "seltsame Log-Nachrichten durch Downgrading RRule wieder beheben",
+        "ru": "исправить странные сообщения журнала путем понижать RRule снова",
+        "pt": "corrigir mensagens de log estranhas por downgrading RRule novamente",
+        "nl": "vertaling:",
+        "fr": "corriger des messages étranges en dégradant RRule à nouveau",
+        "it": "correggere i messaggi di registro strani degradando di nuovo RRule",
+        "es": "solucionar extraños mensajes de registro por la reducción de RRule de nuevo",
+        "pl": "naprawić dziwne wiadomości logowe poprzez zdegradowanie RRule'a ponownie",
+        "zh-cn": "f 照常逻辑信息,再降解后再降解。"
+      },
+      "1.13.1": {
+        "en": "Changed request library",
+        "de": "Bibliothek der geänderten Anfrage",
+        "ru": "Измененная библиотека запросов",
+        "pt": "Biblioteca de solicitação alterada",
+        "nl": "Verandering van verzoek bibliotheek",
+        "fr": "Changed request library",
+        "it": "Libreria richiesta modificata",
+        "es": "Biblioteca de solicitud modificada",
+        "pl": "Zmiennikowa biblioteka",
+        "zh-cn": "更改要求图书馆"
+      },
       "1.13.0": {
         "en": "Added Admin 5 UI\nTranslated all object names",
         "de": "Admin 5 UI\nAlle Objektnamen übersetzt",
@@ -62,30 +86,6 @@
         "es": "Se corrigió el procesamiento incorrecto de eventos de recurrencia.",
         "pl": "naprawiono nieprawidłowe przetwarzanie zdarzeń rekurencyjnych",
         "zh-cn": "修复了不正确的重复事件处理"
-      },
-      "1.11.5": {
-        "en": "updated node-ical to latest 0.14.1\nfix another issue where an already ended event is still listed",
-        "de": "Node-ical auf neueste 0.14.1 . aktualisiert\nBehebung eines weiteren Problems, bei dem ein bereits beendetes Ereignis noch aufgeführt wird",
-        "ru": "обновлен node-ical до последней версии 0.14.1\nисправить другую проблему, когда уже завершившееся событие все еще отображается в списке",
-        "pt": "Nó-ical atualizado para a última 0.14.1\ncorrigir outro problema em que um evento já encerrado ainda está listado",
-        "nl": "bijgewerkte node-ical naar de laatste 0.14.1\neen ander probleem oplossen waarbij een reeds beëindigd evenement nog steeds wordt vermeld",
-        "fr": "Node-ical mis à jour à la dernière version 0.14.1\nrésoudre un autre problème où un événement déjà terminé est toujours répertorié",
-        "it": "aggiornato node-ical all'ultima 0.14.1\nrisolvere un altro problema in cui è ancora elencato un evento già terminato",
-        "es": "actualizado node-ical a la última versión 0.14.1\nsolucionar otro problema en el que un evento ya finalizado todavía aparece en la lista",
-        "pl": "zaktualizowano węzeł-ical do najnowszej wersji 0.14.1\nnapraw inny problem, w którym już zakończone wydarzenie jest nadal na liście",
-        "zh-cn": "将 node-ical 更新为最新的 0.14.1\n修复另一个问题，即仍列出已结束的事件"
-      },
-      "1.11.4": {
-        "en": "fix cases where already ended entries where still listed\nfix reported sentry crash cases (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "de": "Fälle beheben, in denen bereits beendete Einträge noch aufgelistet wurden\ngemeldete Sentry-Crash-Fälle beheben (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "ru": "исправить случаи, когда уже законченные записи все еще перечислены\nисправить зарегистрированные случаи аварийного завершения работы часового (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "pt": "corrigir casos em que entradas já encerradas e ainda listadas\ncorrigir casos relatados de acidentes de sentinela (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "nl": "repareer gevallen waarin reeds beëindigde vermeldingen nog steeds worden vermeld\nrepareer gerapporteerde crashgevallen van schildwachten (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "fr": "corriger les cas où les entrées déjà terminées étaient toujours répertoriées\ncorrection des cas de plantage de sentinelle signalés (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "it": "correggere i casi in cui le voci già terminate erano ancora elencate\ncorreggere i casi di crash di sentinella segnalati (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "es": "Corregir casos en los que las entradas ya finalizadas todavía estaban en la lista.\narreglar casos de accidentes de centinela notificados (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "pl": "napraw przypadki, w których już zakończone wpisy były nadal wymienione\nnaprawiono zgłoszone przypadki awarii wartowników (IOBROKER-ICAL-S, IOBROKER-ICAL-N)",
-        "zh-cn": "修复已经结束的条目仍然列出的情况\n修复报告的哨兵崩溃案例（IOBROKER-ICAL-S、IOBROKER-ICAL-N）"
       }
     },
     "title": "iCal Calendar",

@@ -12,10 +12,13 @@
 This adapter allows to read .ics files from specific URL and parse it (Google Calendar or iCal). 
 Alternatively it is possible to use a local `.ics` file (use absolute path to the file instead of URL)
 
-Read english [here](docs/en/README.md).
-Siehe deutsche [Version hier](docs/de/README.md).
-
 **This adapter uses Sentry libraries to automatically report exceptions and code errors to the developers.** For more details and for information how to disable the error reporting see [Sentry-Plugin Documentation](https://github.com/ioBroker/plugin-sentry#plugin-sentry)! Sentry reporting is used starting with js-controller 3.0.
+
+## Documentation
+
+[🇺🇸 Documentation](./docs/en/README.md)
+
+[🇩🇪 Dokumentation](./docs/de/README.md)
 
 ## Todo
 * `data.trigger` doesn't support `check` option
@@ -26,6 +29,12 @@ Siehe deutsche [Version hier](docs/de/README.md).
 	Placeholder for the next version (at the beginning of the line):
 	### **WORK IN PROGRESS**
 -->
+### 1.13.2 (2022-08-29)
+* (Apollon77) fix strange log messages by downgrading RRule again
+
+### 1.13.1 (2022-06-27)
+* (klein0r) Changed request library
+
 ### 1.13.0 (2022-06-17)
 * (klein0r) Added Admin 5 UI
 * (klein0r) Translated all object names
@@ -35,19 +44,6 @@ Siehe deutsche [Version hier](docs/de/README.md).
 
 ### 1.12.1 (2022-03-22)
 * (Apollon77) Adjust colorize of dates to also show dates started in the past with todays color
-
-### 1.12.0 (2022-03-21)
-* (Apollon77/Scrounger) Add option to choose the ack flag set when updating foreign objects on events
-* (HSE83) use a color field from the calendar entry as color for display
-* (Apollon77) When no Arrow for already running events is shown and dates are not replaced with words display the start date in the list and not the end date
-* (Apollon77) When not replacing date with words and entry ends at 0:0:0 show the day before as end
-* (Apollon77) Fix issues when no end date is provided in the calendar entry (start and end are the same)
-* (Apollon77) Correctly calculate length of multi day events
-* (Apollon77) Respect DST changes in some calculations to prevent strange effects
-* (Apollon77) Parse ics Files with different line endings again
-
-### 1.11.6 (2021-12-17)
-* (jens-maus) fixed incorrect recurrence event processing
 
 ## License
 
